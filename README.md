@@ -1,1 +1,1 @@
-##imbeds a progress bar into any video
+#imbeds a progress bar into any video
