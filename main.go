@@ -37,11 +37,11 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute) // 10 minutes timeout
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "ffmpeg", "-i", inputFile, "-vf",
-		"color=c=red:size=1920x1080,scale=eval=frame:w='if(gte(t*20,600),600,t*20)':h=20[cl];[0:v][cl]overlay=x=0:y=0:shortest=1",
+		"color=c=white:size=1920x1080,scale=eval=frame:w='if(gte(t*36,600),600,t*36)':h=20[cl];[0:v][cl]overlay=x=1000:y=1000:shortest=1",
 		"-c:a", "copy", outputFile)
 
 	// Print the command for debugging
-	fmt.Printf("Running command: %s\n", strings.Join(cmd.Args, " "))
+	// fmt.Printf("Running command: %s\n", strings.Join(cmd.Args, " "))
 
 	// Capture FFmpeg's stderr to track progress
 	stderr, err := cmd.StderrPipe()
@@ -82,7 +82,6 @@ func main() {
 	fmt.Printf("\nVideo processing completed successfully. Output saved to %s\n", outputFile)
 }
 
-// generateOutputFileName creates an output file name by adding an "output" suffix
 func generateOutputFileName(inputFile string) string {
 	ext := filepath.Ext(inputFile)
 	name := strings.TrimSuffix(inputFile, ext)
