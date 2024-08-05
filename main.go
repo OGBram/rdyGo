@@ -37,7 +37,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute) // 10 minutes timeout
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "ffmpeg", "-i", inputFile, "-vf",
-		"color=c=white:size=1920x1080,scale=eval=frame:w='if(gte(t*36,600),600,t*36)':h=20[cl];[0:v][cl]overlay=x=1000:y=1000:shortest=1",
+		"color=c=white,scale=eval=frame:w='if(gte(t-1,400),400,t+t*35)':h=20[cl];[0:v][cl]overlay=x=100:y=1200:shortest=1",
 		"-c:a", "copy", outputFile)
 
 	// Print the command for debugging
