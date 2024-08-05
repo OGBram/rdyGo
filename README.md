@@ -1,9 +1,9 @@
 # rdyGo
 ## Bryan Blackburn
 ## Artist / IT
-bramson042@gmail.com
+## Imbeds a progress bar in any video
 
-Imbeds a progress bar in any video
+bramson042@gmail.com
 
 Other projects
 
