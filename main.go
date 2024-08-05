@@ -11,6 +11,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 )
 
 func main() {
@@ -32,11 +33,12 @@ func main() {
 	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
 	s.Start()
 
-	// Build the FFmpeg command with the simplified progress bar
-	cmd := exec.Command("ffmpeg", "-i", inputFile, "-vf",
-		"drawbox=y=ih-80:color=yellow:width=iw:height=80:t=fill",
-		"-c:a", "copy",
-		outputFile)
+	// Build the FFmpeg command with a simplified filter
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute) // 10 minutes timeout
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "ffmpeg", "-i", inputFile, "-vf",
+		"color=c=red:size=1920x1080,scale=eval=frame:w='if(gte(t*20,600),600,t*20)':h=20[cl];[0:v][cl]overlay=x=0:y=0:shortest=1",
+		"-c:a", "copy", outputFile)
 
 	// Print the command for debugging
 	fmt.Printf("Running command: %s\n", strings.Join(cmd.Args, " "))
@@ -59,6 +61,7 @@ func main() {
 			if strings.Contains(line, "frame=") {
 				// Update spinner based on progress info
 				s.Suffix = " Processing: " + line
+				fmt.Print("\r" + line) // Print the progress line
 			}
 		}
 		if err := scanner.Err(); err != nil {
@@ -68,11 +71,15 @@ func main() {
 
 	if err := cmd.Wait(); err != nil {
 		s.Stop()
-		logrus.Fatalf("Error executing command: %v", err)
+		if ctx.Err() == context.DeadlineExceeded {
+			logrus.Fatalf("Command timed out")
+		} else {
+			logrus.Fatalf("Error executing command: %v", err)
+		}
 	}
 
 	s.Stop()
-	fmt.Printf("Video processing completed successfully. Output saved to %s\n", outputFile)
+	fmt.Printf("\nVideo processing completed successfully. Output saved to %s\n", outputFile)
 }
 
 // generateOutputFileName creates an output file name by adding an "output" suffix
